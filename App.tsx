@@ -93,7 +93,7 @@ const App: React.FC = () => {
 
     if (!activeProfile) {
       return (
-        <div className="h-[70vh] flex flex-col items-center justify-center text-center space-y-4">
+        <div className="h-[70vh] flex flex-col items-center justify-center text-center space-y-4 px-4">
           <div className="w-20 h-20 bg-indigo-100 rounded-3xl flex items-center justify-center text-indigo-600">
             <LayoutDashboard className="w-10 h-10" />
           </div>
@@ -130,7 +130,7 @@ const App: React.FC = () => {
         activeProfile={activeProfile}
         onProfileSwitch={handleProfileSwitch}
       />
-      <main className="flex-1 overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8 pt-20 md:pt-8">
         <div className="max-w-7xl mx-auto">
           {renderView()}
         </div>

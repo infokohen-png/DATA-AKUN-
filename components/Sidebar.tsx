@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Store, Package, ShoppingCart, Video, 
-  LogOut, Sparkles, UserCircle2, Users, Plus, X, Check, Loader2, Settings
+  LogOut, Sparkles, Users, Plus, X, Check, Loader2, Settings, Menu
 } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -25,6 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const [newAccountName, setNewAccountName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     { id: 'DASHBOARD', label: 'Ringkasan', icon: LayoutDashboard },
@@ -42,7 +43,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     
     setIsSaving(true);
     try {
-      // Menggunakan koleksi "AKUN" sesuai request user
       const docRef = await addDoc(collection(db, 'AKUN'), {
         userId: auth.currentUser.uid,
         nama: newAccountName.trim(),
@@ -63,22 +63,63 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
+  const navigateTo = (view: ViewState) => {
+    setView(view);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
-      <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-screen sticky top-0">
+      {/* Mobile Top Bar (Garis 3) */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200 z-40 px-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <Store className="text-white w-5 h-5" />
+          </div>
+          <h1 className="text-lg font-bold tracking-tight text-slate-800">ShopHub</h1>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+        >
+          <Menu className="w-6 h-6 text-slate-600" />
+        </button>
+      </div>
+
+      {/* Backdrop for Mobile */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
+      )}
+
+      {/* Sidebar Content (Desktop and Mobile Drawer) */}
+      <aside className={`
+        fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-slate-200 z-[55] flex flex-col transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="p-6">
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Store className="text-white w-5 h-5" />
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <Store className="text-white w-5 h-5" />
+              </div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-800">ShopHub</h1>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-800">ShopHub</h1>
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="md:hidden p-1 hover:bg-slate-100 rounded-lg"
+            >
+              <X className="w-5 h-5 text-slate-400" />
+            </button>
           </div>
 
           <nav className="space-y-1">
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setView(item.id as ViewState)}
+                onClick={() => navigateTo(item.id as ViewState)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   currentView === item.id 
                   ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
@@ -125,8 +166,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
+      {/* Modal Switch Akun Tetap Sama */}
       {showSwitchModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowSwitchModal(false)}></div>
           <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl relative z-10 overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -162,7 +204,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {profiles.map((profile) => (
                       <button
                         key={profile.id}
-                        onClick={() => { onProfileSwitch(profile); setShowSwitchModal(false); }}
+                        onClick={() => { onProfileSwitch(profile); setShowSwitchModal(false); setIsMobileMenuOpen(false); }}
                         className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${
                           activeProfile?.id === profile.id 
                           ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-100' 
@@ -190,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <Plus className="w-4 h-4" /> Tambah Akun Baru
                     </button>
                     <button 
-                      onClick={() => { setView('AKUN'); setShowSwitchModal(false); }}
+                      onClick={() => { navigateTo('AKUN'); setShowSwitchModal(false); }}
                       className="w-full py-3 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs hover:bg-slate-100"
                     >
                       <Settings className="w-4 h-4" /> Kelola Semua Akun
