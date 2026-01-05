@@ -50,12 +50,11 @@ const SalesList: React.FC<SalesListProps> = ({ activeProfileId }) => {
     });
 
     const qSales = query(
-      collection(db, 'PENJUALAN PRODUK'), 
+      collection(db, 'PENJUALAN'), 
       where('profileId', '==', activeProfileId)
     );
     const unsubSales = onSnapshot(qSales, (snapshot) => {
       const salesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Sale[];
-      // Client-side sort by date descending
       const sortedSales = salesData.sort((a, b) => {
         const timeA = a.tanggal?.toMillis ? a.tanggal.toMillis() : 0;
         const timeB = b.tanggal?.toMillis ? b.tanggal.toMillis() : 0;
@@ -97,12 +96,12 @@ const SalesList: React.FC<SalesListProps> = ({ activeProfileId }) => {
       };
       
       if (editingSale) {
-        await updateDoc(doc(db, 'PENJUALAN PRODUK', editingSale.id), payload);
+        await updateDoc(doc(db, 'PENJUALAN', editingSale.id), payload);
       } else {
-        await addDoc(collection(db, 'PENJUALAN PRODUK'), { ...payload, createdAt: serverTimestamp() });
+        await addDoc(collection(db, 'PENJUALAN'), { ...payload, createdAt: serverTimestamp() });
       }
       closeModal();
-    } catch (err) { alert("Gagal menyimpan data penjualan."); }
+    } catch (err) { alert("Gagal menyimpan data."); }
     finally { setIsSaving(false); }
   };
 
@@ -165,7 +164,7 @@ const SalesList: React.FC<SalesListProps> = ({ activeProfileId }) => {
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
           <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-md"><TrendingUp className="w-8 h-8 text-white" /></div>
           <div>
-            <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest">Omset Filtered (Akun Ini)</p>
+            <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest">Omset Terfilter</p>
             <p className="text-3xl font-black text-white">Rp {totalOmsetAll.toLocaleString('id-ID')}</p>
           </div>
         </div>
@@ -194,13 +193,13 @@ const SalesList: React.FC<SalesListProps> = ({ activeProfileId }) => {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => { setEditingSale(sale); setFormData({ tokoId: sale.tokoId, produkId: sale.produkId, jumlah: sale.jumlah, totalOmset: sale.totalOmset, tanggal: sale.tanggal?.toDate ? sale.tanggal.toDate().toISOString().split('T')[0] : '' }); setIsModalOpen(true); }} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Edit3 className="w-4 h-4" /></button>
-                    <button onClick={async () => { if (window.confirm('Hapus transaksi ini?')) await deleteDoc(doc(db, 'PENJUALAN PRODUK', sale.id)); }} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={async () => { if (window.confirm('Hapus transaksi ini?')) await deleteDoc(doc(db, 'PENJUALAN', sale.id)); }} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
               </tr>
             )) : (
               <tr>
-                <td colSpan={6} className="px-6 py-20 text-center text-slate-400 italic">Tidak ada histori penjualan untuk akun ini pada filter ini.</td>
+                <td colSpan={6} className="px-6 py-20 text-center text-slate-400 italic">Tidak ada data untuk filter ini.</td>
               </tr>
             )}
           </tbody>

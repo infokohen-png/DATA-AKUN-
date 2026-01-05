@@ -38,7 +38,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Menggunakan koleksi "AKUN" sesuai request user
     const q = query(collection(db, 'AKUN'), where('userId', '==', user.uid));
     const unsubProfiles = onSnapshot(q, (snapshot) => {
       const profileList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AccountProfile[];
@@ -82,7 +81,6 @@ const App: React.FC = () => {
   }
 
   const renderView = () => {
-    // CRUD Akun bisa diakses meskipun belum ada profile aktif (untuk membuat profile pertama)
     if (currentView === 'AKUN') {
       return (
         <AccountManagement 
@@ -100,7 +98,7 @@ const App: React.FC = () => {
             <LayoutDashboard className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900">Belum Ada Akun Terdaftar</h2>
-          <p className="text-slate-500 max-w-sm">Silakan buat akun bisnis pertama Anda di menu "Pindah Akun" untuk mulai mendata.</p>
+          <p className="text-slate-500 max-w-sm">Silakan buat akun bisnis pertama Anda di menu "Kelola Akun" untuk mulai mendata.</p>
           <button 
             onClick={() => setCurrentView('AKUN')}
             className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-lg"

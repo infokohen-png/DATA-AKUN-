@@ -5,11 +5,11 @@ import { db, auth } from '../firebase';
 import { Product, Sale, ContentRecord, Shop } from '../types';
 import { 
   Store, Package, ShoppingCart, Video, TrendingUp, Coins, 
-  ChevronDown, ChevronUp, Target, Image as ImageIcon, 
-  Calendar, Filter, X 
+  ChevronDown, ChevronUp, Image as ImageIcon, 
+  Filter, X 
 } from 'lucide-react';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
+  BarChart, Bar, XAxis, Tooltip, 
   ResponsiveContainer, Cell 
 } from 'recharts';
 
@@ -46,7 +46,6 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
   const [loading, setLoading] = useState(true);
   const [expandedShopId, setExpandedShopId] = useState<string | null>(null);
 
-  // Filter States
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedShopId, setSelectedShopId] = useState('');
@@ -57,11 +56,11 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
 
     setLoading(true);
 
-    // CRITICAL: Filter queries by current profileId
+    // Hapus orderBy dari semua query untuk menghindari index error di Vercel
     const qToko = query(collection(db, 'NAMA TOKO'), where('profileId', '==', activeProfileId));
     const qProduk = query(collection(db, 'NAMA PRODUK'), where('profileId', '==', activeProfileId));
     const qKonten = query(collection(db, 'KONTEN'), where('profileId', '==', activeProfileId));
-    const qSales = query(collection(db, 'PENJUALAN PRODUK'), where('profileId', '==', activeProfileId));
+    const qSales = query(collection(db, 'PENJUALAN'), where('profileId', '==', activeProfileId));
 
     const unsubToko = onSnapshot(qToko, (tokoSnap) => {
       const shops = tokoSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Shop[];
@@ -76,7 +75,6 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
           const unsubSales = onSnapshot(qSales, (salesSnap) => {
             const sales = salesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Sale[];
 
-            // Apply Date & Shop Filters
             const filteredSales = sales.filter(s => {
               const sDate = s.tanggal?.toDate ? s.tanggal.toDate() : null;
               const matchesShop = !selectedShopId || s.tokoId === selectedShopId;
@@ -153,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
   if (loading) return (
     <div className="h-[60vh] flex flex-col items-center justify-center">
       <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-      <p className="mt-4 text-slate-500 font-medium tracking-tight">Menyusun data untuk akun ini...</p>
+      <p className="mt-4 text-slate-500 font-medium tracking-tight">Menyiapkan Dashboard...</p>
     </div>
   );
 
@@ -162,7 +160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Business Intel</h1>
-          <p className="text-slate-500 mt-1 font-medium italic">Data khusus untuk profil yang sedang aktif.</p>
+          <p className="text-slate-500 mt-1 font-medium italic">Data untuk profil yang sedang aktif.</p>
         </div>
         <div className="flex items-center gap-2">
            {(startDate || endDate || selectedShopId) && (
@@ -172,12 +170,11 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
            )}
            <div className="bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 flex items-center gap-2">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Terisolasi Aman</span>
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Live Connection</span>
           </div>
         </div>
       </header>
 
-      {/* Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-wrap gap-4 items-center">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-400" />
@@ -193,7 +190,6 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Total Omset', value: globalStats.totalOmset, icon: Coins, color: 'text-emerald-600', bg: 'bg-emerald-50', prefix: 'Rp ' },
@@ -211,7 +207,6 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
         ))}
       </div>
 
-      {/* Detail Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between mb-2">
@@ -262,7 +257,6 @@ const Dashboard: React.FC<DashboardProps> = ({ activeProfileId }) => {
           </div>
         </div>
 
-        {/* Chart Column */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm h-fit">
           <h3 className="text-lg font-bold text-slate-900 mb-6">Distribusi Omset</h3>
           <div className="h-64">
